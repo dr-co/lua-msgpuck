@@ -1,0 +1,3 @@
+[submodule "modules/msgpuck"]
+	path = modules/msgpuck
+	url = git@github.com:rtsisyk/msgpuck.git
