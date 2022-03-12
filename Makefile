@@ -2,7 +2,7 @@ SRC	:= $(wildcard src/*.c)
 MSRC	:= $(wildcard modules/msgpuck/*.c)
 
 OBJ	:= $(SRC:src/%.c=build/%.o) 
-MOBJ	:= $(MSRC:modules/msgpuck/%.c=build/%.o)
+#MOBJ	:= $(MSRC:modules/msgpuck/%.c=build/%.o)
 
 INCDIR	:= relative .
 INCOPT	:= $(INCDIR:%=-I%)
@@ -21,7 +21,7 @@ test: build/dr/$(TARGET).so
 	prove -r t
 
 build/dr/$(TARGET).so: $(OBJ) $(MOBJ)
-	gcc $(INCOPT) $(COPTS) -shared -o $@ $(OBJ) $(MOBJ)
+	gcc $(INCOPT) $(COPTS) -shared -o $@ $(OBJ) 
 
 $(OBJ): build/%.o: src/%.c
 	gcc $(INCOPT) $(COPTS) -c -o $@ $<
