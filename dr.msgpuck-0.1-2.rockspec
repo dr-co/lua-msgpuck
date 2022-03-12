@@ -18,12 +18,13 @@ build = {
       ["dr.msgpuck"] = {
          sources = {
             "src/dr-msgpuck.c",
-            -- "src/buffer.h",
-            -- "src/msgpack.h",
 
             "src/hints.c",
             "src/msgpuck.c",
-            -- "src/msgpuck.h",
+            
+            "src/buffer.h",
+            "src/msgpack.h",
+            "src/msgpuck.h",
 
          }
       }
