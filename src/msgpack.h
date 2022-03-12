@@ -21,7 +21,7 @@
 #define __DR_MSGPACK_H_INCLUDED__
 
 
-#include "../modules/msgpuck/msgpuck.h"
+#include "msgpuck.h"
 
 
 extern inline char *
