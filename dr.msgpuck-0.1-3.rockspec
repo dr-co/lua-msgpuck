@@ -1,6 +1,6 @@
-package = "dr.msgpuck"
 rockspec_format = "3.0"
-version = "0.1-2"
+package = "dr.msgpuck"
+version = "0.1-3"
 source = {
    url = "git+https://github.com/dr-co/lua-msgpuck",
    branch = "master"
@@ -14,9 +14,9 @@ dependencies = {
    "lua >= 5.1"
 }
 build_dependencies = {
-    'luabenchmark',
-    'lua-messagepack',
-    'dr.tap',
+   "luabenchmark",
+   "lua-messagepack",
+   "dr.tap"
 }
 build = {
    type = "builtin",
@@ -25,9 +25,8 @@ build = {
          sources = {
             "src/dr-msgpuck.c",
             "src/hints.c",
-            "src/msgpuck.c",
+            "src/msgpuck.c"
          }
-      },
+      }
    }
 }
-
