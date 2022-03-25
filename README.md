@@ -87,6 +87,7 @@ end
 - `ER_INVALID_MESSAGEPACK` - Invalid messagepack.
 - `ER_SERIALIZE` - Object can't be serialized as messagepack (for example function).
 - `ER_DEEP_RECURSION` - Deep recursion.
+- `ER_ARG_MODE` - Wrong `mode` option.
 - `ER_ERRNO_<code>` - Libc error (ENOMEM).
 
 
@@ -100,6 +101,35 @@ mp.encode(setmetatable({1}, {__serialize = 'seq'}))	 -- messagepack array
 
 -- the function can return serializable object
 mp.encode(setmetatable(o, {__serialize = function(x) return tonumber(x) end}))
+
+```
+
+## Decoding stream(s)
+
+From time to time You need decoding an element from top of buffer and
+getting tail of bufer. You can use the format of `:decode`:
+
+```lua
+
+local mp = require 'dr.msgpuck'
+
+local buffer = mp.encode(1) .. "hello, world!"
+
+print(mp.decode(buffer))	-- 1
+print(mp.decode{buffer})	-- 1
+
+local res = mp.decode{buffer, mode='tail'}
+print(res[1])			-- 1
+print(res[2])			-- hello, world!
+print(type(res))		-- table
+
+
+local res = mp.decode{buffer, mode='tailpos'}
+print(res[1])			-- 1
+print(res[2])			-- 1
+print(string.sub(buffer, res))	-- hello, world!
+print(type(res))		-- table
+
 
 ```
 

@@ -1,6 +1,6 @@
 rockspec_format = "3.0"
 package = "dr.msgpuck"
-version = "0.1-3"
+version = "0.1-4"
 source = {
    url = "git+https://github.com/dr-co/lua-msgpuck",
    branch = "master"

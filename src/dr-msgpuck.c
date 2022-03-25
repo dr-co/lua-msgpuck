@@ -32,6 +32,7 @@
 #define ER_INVALID_MESSAGEPACK	-3
 #define ER_SERIALIZE		-4
 #define ER_DEEP_RECURSION	-5
+#define ER_ARG_MODE		-6
 
 
 #define MAX_DEEP_RECURSION	10000
@@ -57,6 +58,9 @@ drlua_pusherror(lua_State *L, int error)
 			break;
 		case ER_DEEP_RECURSION:
 			lua_pushliteral(L, "ER_DEEP_RECURSION");
+			break;
+		case ER_ARG_MODE:
+			lua_pushliteral(L, "ER_ARG_MODE");
 			break;
 		default: {
 			assert(error > 0);
@@ -354,6 +358,11 @@ dr_msgpuck_decode(lua_State *L)
 	size_t len;
 	const char *p, *ps;
 	int top = lua_gettop(L);
+	enum {
+		NORMAL = 0,
+		TAIL_POS,
+		TAIL,
+	} mode = NORMAL;
 
 	if (!top) {
 		error = ER_ARG_REQUIRED;
@@ -361,13 +370,44 @@ dr_msgpuck_decode(lua_State *L)
 
 	}
 
-	if (lua_type(L, -1) != LUA_TSTRING) {
-		error = ER_ARG_ISNOTSTRING;
-		goto on_error;
+	switch(lua_type(L, -1)) {
+		case LUA_TSTRING:
+			p = luaL_checklstring(L, -1, &len);
+			break;
+
+		case LUA_TTABLE:
+			lua_pushinteger(L, 1);
+			lua_rawget(L, -2);
+			if (lua_type(L, -1) != LUA_TSTRING) {
+				error = ER_ARG_ISNOTSTRING;
+				goto on_error;
+			}
+
+
+			lua_pushliteral(L, "mode");
+			lua_rawget(L, -3);
+			if (lua_type(L, -1) == LUA_TSTRING) {
+				p = luaL_checklstring(L, -1, &len);
+				if (strcmp(p, "tailpos") == 0) {
+					mode = TAIL_POS;
+				} else if (strcmp(p, "tail") == 0) {
+					mode = TAIL;
+				} else {
+					error = ER_ARG_MODE;
+					goto on_error;
+				}
+			}
+			lua_pop(L, 1);
+
+			p = luaL_checklstring(L, -1, &len);
+
+			break;
+
+		default:
+			error = ER_ARG_ISNOTSTRING;
+			goto on_error;
 	}
 
-
-	p = luaL_checklstring(L, -1, &len);
 
 	if (!len) {
 		error = ER_INVALID_MESSAGEPACK;
@@ -382,6 +422,7 @@ dr_msgpuck_decode(lua_State *L)
 		goto on_error;
 	}
 
+	ps = p;
 	error = decode_item(L, &p, len);
 
 	if (error) {
@@ -390,7 +431,39 @@ dr_msgpuck_decode(lua_State *L)
 		goto on_error;
 	}
 
-	lua_remove(L, -2);
+	switch(mode) {
+		case NORMAL:
+			break;
+
+		case TAIL_POS:
+			lua_newtable(L);
+			lua_pushinteger(L, 1);
+			lua_pushvalue(L, -3);
+			lua_rawset(L, -3);
+			lua_remove(L, -2);
+
+			lua_pushinteger(L, 2);
+			lua_pushinteger(L, 1 + p - ps);
+			lua_rawset(L, -3);
+			break;
+
+		case TAIL:
+			lua_newtable(L);
+			lua_pushinteger(L, 1);
+			lua_pushvalue(L, -3);
+			lua_rawset(L, -3);
+			lua_remove(L, -2);
+
+			lua_pushinteger(L, 2);
+			lua_pushlstring(
+				L,
+				ps + ((int)(p - ps)), len - (p - ps)
+			);
+			lua_rawset(L, -3);
+			break;
+
+	}
+
 	return 1;
 
 	on_error:
